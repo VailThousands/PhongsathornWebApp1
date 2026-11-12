@@ -1,0 +1,102 @@
+@model IEnumerable<Product>
+@{
+    ViewData["Title"] = "สินค้า";
+    var products = Model?.ToList() ?? new List<Product>();
+    var productArt = new[] { "👜", "☕", "💡", "🎧", "⌚", "📷", "🌿" };
+}
+
+<section class="shop-page">
+    <div class="shop-hero">
+        <div class="shop-hero-copy">
+            <span class="shop-eyebrow"><span class="shop-eyebrow-dot"></span> คัดสรรมาเพื่อทุกวัน</span>
+            <h1>ของดีที่ทำให้<br /><span>ทุกวันพิเศษขึ้น</span></h1>
+            <p>เลือกดูสินค้าชิ้นโปรด เรียบง่าย ใช้ได้จริง และพร้อมส่งถึงคุณ</p>
+            <a class="shop-hero-link" href="#product-grid">เลือกชมสินค้า <span aria-hidden="true">↓</span></a>
+        </div>
+        <div class="shop-hero-art" aria-hidden="true">
+            <span class="hero-orbit hero-orbit-one"></span>
+            <span class="hero-orbit hero-orbit-two"></span>
+            <span class="hero-spark hero-spark-one">✳</span>
+            <span class="hero-spark hero-spark-two">✦</span>
+            <span class="hero-bag">🛍️</span>
+            <span class="hero-note">little things,<br />better days</span>
+        </div>
+    </div>
+
+    <div class="shop-toolbar">
+        <div>
+            <span class="shop-section-kicker">THE COLLECTION</span>
+            <h2>สินค้าทั้งหมด <span class="shop-count">@products.Count</span></h2>
+        </div>
+        <label class="shop-search">
+            <span aria-hidden="true">⌕</span>
+            <span class="visually-hidden">ค้นหาสินค้า</span>
+            <input id="product-search" type="search" placeholder="ค้นหาสินค้าที่ชอบ..." autocomplete="off" />
+            <kbd>/</kbd>
+        </label>
+    </div>
+
+    @if (products.Count > 0)
+    {
+        <div class="shop-grid" id="product-grid">
+            @for (var index = 0; index < products.Count; index++)
+            {
+                var product = products[index];
+                var available = product.quantity > 0;
+                <article class="shop-card" data-product-name="@product.Name.ToLowerInvariant()">
+                    <div class="shop-card-art shop-art-@(index % 4)">
+                        <span class="shop-card-label">PICK FOR YOU</span>
+                        <span class="shop-product-icon" aria-hidden="true">@productArt[index % productArt.Length]</span>
+                        <span class="shop-product-number">@((index + 1).ToString("00"))</span>
+                        <span class="shop-stock @(available ? "in-stock" : "out-stock")">
+                            <span></span>@(available ? "พร้อมส่ง" : "สินค้าหมด")
+                        </span>
+                    </div>
+                    <div class="shop-card-body">
+                        <div class="shop-card-heading">
+                            <h3>@product.Name</h3>
+                            <span class="shop-card-arrow" aria-hidden="true">↗</span>
+                        </div>
+                        <div class="shop-card-footer">
+                            <span class="shop-price">฿@product.Price.ToString("N2")</span>
+                            <span class="shop-quantity">เหลือ @product.quantity ชิ้น</span>
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+        <p class="shop-empty" id="product-empty" hidden>ไม่พบสินค้าที่ตรงกับคำค้น ลองค้นหาด้วยคำอื่นนะ</p>
+    }
+    else
+    {
+        <div class="shop-empty shop-empty-visible">ยังไม่มีสินค้าในร้าน ลองกลับมาดูใหม่อีกครั้งนะ</div>
+    }
+</section>
+
+@section Scripts {
+    <script>
+        (() => {
+            const search = document.getElementById('product-search');
+            const cards = [...document.querySelectorAll('.shop-card')];
+            const empty = document.getElementById('product-empty');
+
+            search?.addEventListener('input', () => {
+                const query = search.value.trim().toLocaleLowerCase();
+                let visibleCount = 0;
+                cards.forEach(card => {
+                    const matches = card.dataset.productName.includes(query);
+                    card.hidden = !matches;
+                    if (matches) visibleCount++;
+                });
+                if (empty) empty.hidden = visibleCount > 0;
+            });
+
+            document.addEventListener('keydown', event => {
+                if (event.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+                    event.preventDefault();
+                    search?.focus();
+                }
+            });
+        })();
+    </script>
+}
