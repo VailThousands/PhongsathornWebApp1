@@ -4,6 +4,7 @@ using System.Diagnostics;
 
 namespace PhongsathornWebApp1.Controllers
 {
+
     public class HomeController : Controller
     {
         public IActionResult Index(int page = 1)
