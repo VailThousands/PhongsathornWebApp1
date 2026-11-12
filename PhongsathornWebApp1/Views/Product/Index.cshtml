@@ -1,102 +1,72 @@
 @model IEnumerable<Product>
+
 @{
     ViewData["Title"] = "สินค้า";
-    var products = Model?.ToList() ?? new List<Product>();
-    var productArt = new[] { "👜", "☕", "💡", "🎧", "⌚", "📷", "🌿" };
 }
 
-<section class="shop-page">
-    <div class="shop-hero">
-        <div class="shop-hero-copy">
-            <span class="shop-eyebrow"><span class="shop-eyebrow-dot"></span> คัดสรรมาเพื่อทุกวัน</span>
-            <h1>ของดีที่ทำให้<br /><span>ทุกวันพิเศษขึ้น</span></h1>
-            <p>เลือกดูสินค้าชิ้นโปรด เรียบง่าย ใช้ได้จริง และพร้อมส่งถึงคุณ</p>
-            <a class="shop-hero-link" href="#product-grid">เลือกชมสินค้า <span aria-hidden="true">↓</span></a>
-        </div>
-        <div class="shop-hero-art" aria-hidden="true">
-            <span class="hero-orbit hero-orbit-one"></span>
-            <span class="hero-orbit hero-orbit-two"></span>
-            <span class="hero-spark hero-spark-one">✳</span>
-            <span class="hero-spark hero-spark-two">✦</span>
-            <span class="hero-bag">🛍️</span>
-            <span class="hero-note">little things,<br />better days</span>
-        </div>
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <div>
+        <h1 class="h2 mb-1">สินค้าทั้งหมด</h1>
+        <p class="text-secondary mb-0">ดูข้อมูลสินค้าและจำนวนคงเหลือ</p>
     </div>
+    <span class="badge text-bg-success fs-6">@Model.Count() รายการ</span>
+</div>
 
-    <div class="shop-toolbar">
+<div class="card">
+    <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2 py-3">
+        <h2 class="h5 mb-0">รายการสินค้า</h2>
         <div>
-            <span class="shop-section-kicker">THE COLLECTION</span>
-            <h2>สินค้าทั้งหมด <span class="shop-count">@products.Count</span></h2>
+            <label for="productSearch" class="visually-hidden">ค้นหาสินค้า</label>
+            <input id="productSearch" class="form-control" type="search" placeholder="ค้นหาชื่อสินค้า..." />
         </div>
-        <label class="shop-search">
-            <span aria-hidden="true">⌕</span>
-            <span class="visually-hidden">ค้นหาสินค้า</span>
-            <input id="product-search" type="search" placeholder="ค้นหาสินค้าที่ชอบ..." autocomplete="off" />
-            <kbd>/</kbd>
-        </label>
     </div>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">รหัส</th>
+                    <th scope="col">ชื่อสินค้า</th>
+                    <th scope="col">ราคา</th>
+                    <th scope="col">จำนวนคงเหลือ</th>
+                </tr>
+            </thead>
+            <tbody id="productRows">
+                @foreach (var product in Model)
+                {
+                    <tr>
+                        <td>@product.Id</td>
+                        <td class="product-name">@product.Name</td>
+                        <td>฿@product.Price.ToString("N2")</td>
+                        <td>@product.Quantity</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <p id="noProductResults" class="text-secondary text-center p-3 mb-0" hidden>ไม่พบสินค้าที่ค้นหา</p>
+</div>
 
-    @if (products.Count > 0)
-    {
-        <div class="shop-grid" id="product-grid">
-            @for (var index = 0; index < products.Count; index++)
-            {
-                var product = products[index];
-                var available = product.quantity > 0;
-                <article class="shop-card" data-product-name="@product.Name.ToLowerInvariant()">
-                    <div class="shop-card-art shop-art-@(index % 4)">
-                        <span class="shop-card-label">PICK FOR YOU</span>
-                        <span class="shop-product-icon" aria-hidden="true">@productArt[index % productArt.Length]</span>
-                        <span class="shop-product-number">@((index + 1).ToString("00"))</span>
-                        <span class="shop-stock @(available ? "in-stock" : "out-stock")">
-                            <span></span>@(available ? "พร้อมส่ง" : "สินค้าหมด")
-                        </span>
-                    </div>
-                    <div class="shop-card-body">
-                        <div class="shop-card-heading">
-                            <h3>@product.Name</h3>
-                            <span class="shop-card-arrow" aria-hidden="true">↗</span>
-                        </div>
-                        <div class="shop-card-footer">
-                            <span class="shop-price">฿@product.Price.ToString("N2")</span>
-                            <span class="shop-quantity">เหลือ @product.quantity ชิ้น</span>
-                        </div>
-                    </div>
-                </article>
-            }
-        </div>
-        <p class="shop-empty" id="product-empty" hidden>ไม่พบสินค้าที่ตรงกับคำค้น ลองค้นหาด้วยคำอื่นนะ</p>
-    }
-    else
-    {
-        <div class="shop-empty shop-empty-visible">ยังไม่มีสินค้าในร้าน ลองกลับมาดูใหม่อีกครั้งนะ</div>
-    }
-</section>
+<p class="text-secondary small mt-3">ข้อมูลสินค้าเป็นข้อมูลตัวอย่างสำหรับโปรเจกต์นี้</p>
 
 @section Scripts {
     <script>
-        (() => {
-            const search = document.getElementById('product-search');
-            const cards = [...document.querySelectorAll('.shop-card')];
-            const empty = document.getElementById('product-empty');
+        const searchInput = document.getElementById('productSearch');
+        const productRows = document.querySelectorAll('#productRows tr');
+        const noResultsMessage = document.getElementById('noProductResults');
 
-            search?.addEventListener('input', () => {
-                const query = search.value.trim().toLocaleLowerCase();
-                let visibleCount = 0;
-                cards.forEach(card => {
-                    const matches = card.dataset.productName.includes(query);
-                    card.hidden = !matches;
-                    if (matches) visibleCount++;
-                });
-                if (empty) empty.hidden = visibleCount > 0;
+        searchInput.addEventListener('input', function () {
+            const searchText = this.value.toLowerCase();
+            let visibleRows = 0;
+
+            productRows.forEach(function (row) {
+                const productName = row.querySelector('.product-name').textContent.toLowerCase();
+                const matches = productName.includes(searchText);
+                row.hidden = !matches;
+
+                if (matches) visibleRows++;
             });
 
-            document.addEventListener('keydown', event => {
-                if (event.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
-                    event.preventDefault();
-                    search?.focus();
-                }
-            });
-        })();
+            noResultsMessage.hidden = visibleRows > 0;
+        });
     </script>
 }
